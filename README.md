@@ -1,7 +1,9 @@
-mjpeg-relay
+mjpeg-relay-dkr
 ===========
 
-mjpeg-relay is a simple Python script which accepts input from an existing MJPEG stream, and relays it to any number of clients. This is intended for a scenario where the original MJPEG stream is hosted on a low-bandwidth internet connection (such as a home connection) or from a low-resource device (such as a Raspberry Pi or IP camera), and you have a server from which you wish to relay the stream to multiple clients without placing extra demand on the original stream.
+mjpeg-relay-dkr is a fork of OlivierF/mjpeg-relay to match ISO specs for Docker images.
+The original script which accepts input from an existing MJPEG stream, and relays it to any number of clients.
+This is intended for a scenario where the original MJPEG stream is hosted on a low-bandwidth internet connection (such as a home connection) or from a low-resource device (such as a Raspberry Pi or IP camera), and you have a server from which you wish to relay the stream to multiple clients without placing extra demand on the original stream.
 
 The script is designed to be simple to use with minimal configuration. All video parameters are defined by the source stream, ensuring mjpeg-relay is as transparent as possible. Rather than creating its own MJPEG stream, mjpeg-relay simply re-streams the original MJPEG stream directly. This is a faster and more transparent approach.
 
@@ -12,17 +14,18 @@ The script is designed to be simple to use with minimal configuration. All video
 - Option to stream to clients via WebSockets
 
 # Installation
-1. Clone this repository with `git clone <URL>`
-2. Ensure submodules are correctly installed by running `git submodule update --init`
+```
+$ docker pull arkdevuk/mjpeg-relay-dkr
+```
 
 # Usage
-`relay.py [-p <relay port>] [-w <WebSocket port>] [-q] [-d] stream-source-url`
+Duplicate config.yaml and set the corrects values for your current setup.
 
 - **-p \<relay port\>**: Port that the stream will be relayed on (default is 54321)
 - **-w \<WebSocket port\>**: Port that the stream will be relayed on via WebSockets (default is 54322)
 - **-q**: Silence non-essential output
 - **-d**: Turn debugging on
-- **stream-source-url**: URL of the existing MJPEG stream. If the stream is protected with HTTP authentication, supply the credentials via the URL like so: `http://user:password@ip:port/path/to/stream/`
+- **stream**: URL of the existing MJPEG stream. If the stream is protected with HTTP authentication, supply the credentials via the URL like so: `http://user:password@ip:port/path/to/stream/`
 
 Once it is running, you can access the following URLs:
 

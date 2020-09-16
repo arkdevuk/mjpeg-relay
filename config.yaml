@@ -1,0 +1,5 @@
+stream: "http://10.0.100.145/mjpg"
+quiet: false
+debug: true
+port: 80
+wsport: 8090

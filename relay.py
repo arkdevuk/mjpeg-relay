@@ -1,3 +1,4 @@
+import yaml
 import sys
 import socket
 import threading
@@ -27,39 +28,40 @@ def quit():
 	broadcaster.kill = True
 	requestHandler.kill = True
 	quitsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	quitsock.connect(("127.0.0.1", options.port))
+	quitsock.connect(("127.0.0.1", soft_config['port']))
 	quitsock.close()
 	sys.exit(1)
 
 if __name__ == '__main__':
-	op = OptionParser(usage = "%prog [options] stream-source-url")
+#	op = OptionParser(usage = "%prog [options] stream-source-url")
 
-	op.add_option("-p", "--port", action="store", default = 54321, dest="port", help = "Port to serve the MJPEG stream on")
-	op.add_option("-w", "--ws-port", action="store", default = 54322, dest="wsport", help = "Port to serve the MJPEG stream on via WebSockets")
-	op.add_option("-q", "--quiet", action="store_true", default = False, dest="quiet", help = "Silence non-essential output")
-	op.add_option("-d", "--debug", action="store_true", default = False, dest="debug", help = "Turn debugging on")
+#	op.add_option("-p", "--port", action="store", default = 54321, dest="port", help = "Port to serve the MJPEG stream on")
+#	op.add_option("-w", "--ws-port", action="store", default = 54322, dest="wsport", help = "Port to serve the MJPEG stream on via WebSockets")
+#	op.add_option("-q", "--quiet", action="store_true", default = False, dest="quiet", help = "Silence non-essential output")
+#	op.add_option("-d", "--debug", action="store_true", default = False, dest="debug", help = "Turn debugging on")
 
-	(options, args) = op.parse_args()
+	soft_config = yaml.safe_load(open("./config.yaml"))
+#	(options, args) = op.parse_args()
 
-	if (len(args) != 1):
-		op.print_help()
-		sys.exit(1)
+#	if (len(args) != 1):
+#		op.print_help()
+#		sys.exit(1)
 
-	logging.basicConfig(level=logging.WARNING if options.quiet else logging.INFO, format="%(message)s")
-	logging.getLogger("requests").setLevel(logging.WARNING if options.quiet else logging.INFO)
+	logging.basicConfig(level=logging.WARNING if soft_config['quiet'] else logging.INFO, format="%(message)s")
+	logging.getLogger("requests").setLevel(logging.WARNING if soft_config['quiet'] else logging.INFO)
 
-	if options.debug:
+	if soft_config['debug']:
 		from httplib import HTTPConnection
 		HTTPConnection.debuglevel = 1
 		logging.getLogger().setLevel(logging.DEBUG)
 		logging.getLogger("requests").setLevel(logging.DEBUG)
 
 	try:
-		options.port = int(options.port)
-		options.wsport = int(options.wsport)
+		soft_config['port'] = int(soft_config['port'])
+		soft_config['wsport'] = int(soft_config['wsport'])
 	except ValueError:
 		logging.error("Port must be numeric")
-		op.print_help()
+#		op.print_help()
 		sys.exit(1)
 
 	Status()
@@ -67,26 +69,23 @@ if __name__ == '__main__':
 	statusThread.daemon = True
 	statusThread.start()
 
-	broadcaster = Broadcaster(args[0])
+	broadcaster = Broadcaster(soft_config['stream'])
 	broadcaster.start()
 
-	requestHandler = HTTPRequestHandler(options.port)
+	requestHandler = HTTPRequestHandler(soft_config['port'])
 	requestHandler.start()
 
-	s = SimpleWebSocketServer('', options.wsport, WebSocketStreamingClient)
+	s = SimpleWebSocketServer('', soft_config['wsport'], WebSocketStreamingClient)
 	webSocketHandlerThread = threading.Thread(target=s.serveforever)
 	webSocketHandlerThread.daemon = True
 	webSocketHandlerThread.start()
 
 	try:
-		while raw_input() != "quit":
+		while True:
 			continue
-		quit()
 	except KeyboardInterrupt:
-		quit()
-	except EOFError:
-		#this exception is raised when ctrl-c is used to close the application on Windows, appears to be thrown twice?
 		try:
 			quit()
 		except KeyboardInterrupt:
 			os._exit(0)
+

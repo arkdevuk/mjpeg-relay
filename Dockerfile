@@ -1,5 +1,13 @@
-from python:2.7-onbuild
+FROM python:2.7-onbuild
+WORKDIR /usr/src/app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-expose 54321
+COPY . .
+#RUN apt-get update && apt-get upgrade -y
+# HTTP PORT ->
+EXPOSE 80
+# WEBSOCKET PORT ->
+EXPOSE 8090
 
-entrypoint ["python", "relay.py"]
+ENTRYPOINT ["python", "relay.py"]
